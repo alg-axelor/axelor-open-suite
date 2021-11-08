@@ -21,6 +21,8 @@ import com.axelor.apps.base.db.Partner;
 import com.axelor.apps.base.db.Product;
 import com.axelor.apps.base.db.repo.PartnerRepository;
 import com.axelor.apps.base.service.app.AppBaseService;
+import com.axelor.apps.sale.db.SaleOrder;
+import com.axelor.apps.sale.db.repo.SaleOrderRepository;
 import com.axelor.apps.sale.service.PartnerSaleService;
 import com.axelor.exception.service.TraceBackService;
 import com.axelor.inject.Beans;
@@ -110,5 +112,20 @@ public class PartnerSaleController {
 
   public void markupByCustomer(ActionRequest request, ActionResponse response) {
     this.averageByCustomer("markup", request, response);
+  }
+
+  public void checkAnySaleOrderAttached(ActionRequest request, ActionResponse response) {
+    Partner partner = request.getContext().asType(Partner.class);
+    if (!partner.getIsCustomer()) {
+      List<SaleOrder> saleOrderList =
+          Beans.get(SaleOrderRepository.class)
+              .all()
+              .filter("self.clientPartner = :partner")
+              .bind("partner", partner.getId())
+              .fetch();
+      if (saleOrderList.size() > 0) {
+        response.setValue("customerCantBeRemoved", true);
+      }
+    }
   }
 }
