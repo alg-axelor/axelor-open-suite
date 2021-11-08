@@ -250,9 +250,6 @@
         <field name="isEmployee" colSpan="2" widget="InlineCheckbox"
           hideIf="$readonly() || isCustomer || isSupplier || isCarrier || isFactor || partnerTypeSelect != 2"
           onChange="action-partner-account-attrs-hide-employee-account,action-partner-record-unset-factor"/>
-        <field name="$customerCantBeRemoved" hidden="true" type="boolean" showIf="false"/>
-        <field name="$supplierCantBeRemoved" hidden="true" type="boolean" showIf="false"/>
-        <field name="$factorCantBeRemoved" hidden="true" type="boolean" showIf="false"/>
         <field name="isCustomer" colSpan="2" widget="InlineCheckbox"
           hideIf="isContact || $readonly() || isEmployee"
           onChange="action-partner-group-check-can-change-customer,action-partner-record-invoices-copy-default-value,action-partner-account-attrs-hide-customer-account,action-partner-attrs-unset-prospect,action-partner-record-unset-factor"/>
@@ -311,6 +308,9 @@
                         ]]></viewer>
           </field>
         </panel>
+        <field name="$customerCantBeRemoved" hidden="true" type="boolean" showIf="false"/>
+        <field name="$supplierCantBeRemoved" hidden="true" type="boolean" showIf="false"/>
+        <field name="$factorCantBeRemoved" hidden="true" type="boolean" showIf="false"/>
       </panel>
     </panel>
     <panel-related name="partnerRoleSetPanel" field="partnerRoleSet"

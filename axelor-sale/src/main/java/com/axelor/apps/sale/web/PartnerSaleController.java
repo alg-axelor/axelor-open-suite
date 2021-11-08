@@ -21,7 +21,6 @@ import com.axelor.apps.base.db.Partner;
 import com.axelor.apps.base.db.Product;
 import com.axelor.apps.base.db.repo.PartnerRepository;
 import com.axelor.apps.base.service.app.AppBaseService;
-import com.axelor.apps.sale.db.SaleOrder;
 import com.axelor.apps.sale.db.repo.SaleOrderRepository;
 import com.axelor.apps.sale.service.PartnerSaleService;
 import com.axelor.exception.service.TraceBackService;
@@ -115,17 +114,21 @@ public class PartnerSaleController {
   }
 
   public void checkAnySaleOrderAttached(ActionRequest request, ActionResponse response) {
-    Partner partner = request.getContext().asType(Partner.class);
-    if (!partner.getIsCustomer()) {
-      List<SaleOrder> saleOrderList =
-          Beans.get(SaleOrderRepository.class)
-              .all()
-              .filter("self.clientPartner = :partner")
-              .bind("partner", partner.getId())
-              .fetch();
-      if (saleOrderList.size() > 0) {
-        response.setValue("customerCantBeRemoved", true);
+    try {
+      Partner partner = request.getContext().asType(Partner.class);
+      if (!partner.getIsCustomer()) {
+        long saleOrderCount =
+            Beans.get(SaleOrderRepository.class)
+                .all()
+                .filter("self.clientPartner = :partner")
+                .bind("partner", partner.getId())
+                .count();
+        if (saleOrderCount > 0) {
+          response.setValue("customerCantBeRemoved", true);
+        }
       }
+    } catch (Exception e) {
+      TraceBackService.trace(response, e);
     }
   }
 }
