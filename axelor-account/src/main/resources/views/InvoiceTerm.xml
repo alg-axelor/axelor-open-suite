@@ -56,7 +56,7 @@
   </grid>
 
   <form name="invoice-term-invoice-form" title="Invoice term"
-    model="com.axelor.apps.account.db.InvoiceTerm" onNew="action-invoice-term-group-onnew"
+    model="com.axelor.apps.account.db.InvoiceTerm" onNew="action-invoice-term-from-invoice-group-onnew"
     onLoad="action-invoice-term-group-onload,action-invoice-term-attrs-set-readonly">
     <panel name="mainPanel" colSpan="12">
       <panel name="headerPanel" colSpan="12" itemSpan="4">
@@ -163,12 +163,12 @@
   </form>
 
   <form name="invoice-term-form" title="Invoice term"
-    model="com.axelor.apps.account.db.InvoiceTerm" onLoad="action-invoice-term-group-onload">
+    model="com.axelor.apps.account.db.InvoiceTerm" onLoad="action-invoice-term-group-onload" onNew="action-invoice-term-from-move-line-group-onnew">
     <panel name="mainPanel" colSpan="12">
       <panel name="headerPanel" colSpan="12" itemSpan="4">
         <field name="sequence" readonly="true"/>
         <field name="name" readonly="true"/>
-        <field name="invoice" readonly="true" form-view="invoice-form"
+        <field name="invoice" readonly="true" required="false" form-view="invoice-form"
           grid-view="invoice-grid"/>
         <field name="isCustomized" readonly="true"/>
         <field name="isPaid" readonly="true"/>
@@ -177,14 +177,14 @@
       </panel>
       <separator colSpan="12"/>
       <panel name="amountDatePanel" colSpan="12" itemSpan="4">
-        <field name="dueDate" readonly="true"/>
-        <field name="isHoldBack" readonly="true"/>
-        <field name="estimatedPaymentDate" readonly="true" if-module="axelor-cash-management"
+        <field name="dueDate" requiredIf="isCustomized" onChange="action-invoice-term-record-update-customized-true"/>
+        <field name="isHoldBack" onChange="action-invoice-term-attrs-set-readonly"/>
+        <field name="estimatedPaymentDate" onChange="action-invoice-term-record-update-customized-true,action-invoice-term-attrs-set-readonly" if-module="axelor-cash-management"
           if="__config__.app.isApp('cash-management')"/>
-        <field name="amount" readonly="true"/>
-        <field name="percentage" readonly="true"/>
+        <field name="amount" onChange="action-invoice-term-method-compute-customized-percentage-from-move-line,action-invoice-term-attrs-set-readonly"/>
+        <field name="percentage" onChange="action-invoice-term-method-compute-customized-amount-from-move-line,action-invoice-term-attrs-set-readonly"/>
         <field name="amountRemaining" readonly="true"/>
-        <field name="paymentMode" readonly="true"/>
+        <field name="paymentMode" readonlyIf="isPaid"/>
         <field name="bankDetails" readonly="true"/>
       </panel>
       <panel name="financialDiscount" title="Financial discount" colSpan="12" itemSpan="4"
@@ -285,8 +285,13 @@
     </panel-mail>
   </form>
 
-  <action-group name="action-invoice-term-group-onnew">
+  <action-group name="action-invoice-term-from-invoice-group-onnew">
     <action name="action-method-invoice-init-invoice-term"/>
+    <action name="action-invoice-term-attrs-set-readonly"/>
+  </action-group>
+
+  <action-group name="action-invoice-term-from-move-line-group-onnew">
+    <action name="action-method-move-line-init-invoice-term"/>
     <action name="action-invoice-term-attrs-set-readonly"/>
   </action-group>
 
@@ -302,7 +307,7 @@
 
   <action-attrs name="action-invoice-term-attrs-set-readonly">
     <attribute for="amount,percentage,estimatedPaymentDate,isHoldBack" name="readonly"
-      expr="(isHoldBack &amp;&amp; invoice.statusSelect == 3) || isPaid || amountRemaining != amount || !invoice.paymentCondition.isFree"/>
+      expr="(isHoldBack &amp;&amp; invoice != null &amp;&amp; invoice?.statusSelect == 3) || isPaid || amountRemaining != amount || (invoice != null &amp;&amp; !invoice?.paymentCondition?.isFree)"/>
   </action-attrs>
 
   <action-record name="action-invoice-term-record-update-customized"
@@ -321,6 +326,21 @@
   <action-method name="action-invoice-term-method-compute-customized-percentage">
     <call class="com.axelor.apps.account.web.InvoiceTermController"
       method="computeCustomizedPercentage"/>
+  </action-method>
+
+  <action-method name="action-invoice-term-method-compute-customized-amount-from-move-line">
+    <call class="com.axelor.apps.account.web.InvoiceTermController"
+          method="computeCustomizedAmountFromMoveLine"/>
+  </action-method>
+
+  <action-method name="action-invoice-term-method-compute-customized-percentage-from-move-line">
+    <call class="com.axelor.apps.account.web.InvoiceTermController"
+          method="computeCustomizedPercentageFromMoveLine"/>
+  </action-method>
+
+  <action-method name="action-method-move-line-init-invoice-term">
+    <call class="com.axelor.apps.account.web.InvoiceTermController"
+          method="initInvoiceTermFromMoveLine"/>
   </action-method>
 
   <action-method name="action-method-invoice-init-invoice-term">

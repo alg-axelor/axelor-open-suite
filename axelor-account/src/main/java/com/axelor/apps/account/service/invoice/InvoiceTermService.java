@@ -63,6 +63,14 @@ public interface InvoiceTermService {
   public Invoice setDueDates(Invoice invoice, LocalDate invoiceDate);
 
   /**
+   * Method that returns sequence based on existing invoiceTerm sequence
+   *
+   * @param moveLine
+   * @return
+   */
+  int initInvoiceTermsSequence(MoveLine moveLine);
+
+  /**
    * Method that returns unpaid invoiceTerms (isPaid != true) of an invoice
    *
    * @param invoice
@@ -114,6 +122,14 @@ public interface InvoiceTermService {
       throws AxelorException;
 
   /**
+   * compute the sum of invoice terms percentages
+   *
+   * @param moveLine
+   * @throws AxelorException
+   */
+    BigDecimal computePercentageSum(MoveLine moveLine);
+
+    /**
    * Check if invoice term were customized
    *
    * @param invoice
@@ -184,6 +200,15 @@ public interface InvoiceTermService {
    * @return
    */
   public boolean checkIfThereIsDeletedHoldbackInvoiceTerms(Invoice invoice);
+
+  /**
+   * init field of invoiceTerm based on moveLine
+   *
+   * @param moveLine
+   * @param invoiceTerm
+   * @return
+   */
+  InvoiceTerm initCustomizedInvoiceTerm(MoveLine moveLine, InvoiceTerm invoiceTerm);
 
   /**
    * return existing moveLine related to invoiceTerm with isHoldBack = false
